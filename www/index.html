@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+  <title>Pair.ist</title>
+  <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.7.3/build/cssreset/cssreset-min.css">
+  <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="main.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/2.2.1/mustache.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.5.1/lodash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.1/jquery.min.js"></script>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.3.3/backbone.js"></script>
+  <script type="text/javascript" src="main.js"></script>
+</head>
+<body>
+
+  <div id="app">
+    <div id="sidebar">People</div>
+    <div id="stage">
+      <div class="tracks-group">
+        <div class="track">
+          <h1>Manage Snapshot</h1>
+          <div class="dev">Tom</div>
+          <div class="dev">Chris</div>
+        </div>
+        <div class="track">
+          <h1>Contract tests</h1>
+          <div class="dev">Ankit</div>
+          <div class="dev">Sannidhi</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script id="track-template" type="x-tmpl-mustache">
+  <div class="track">
+    <h1>{{name}}</h1>
+    {{#devs}}
+    <div class="dev">{{name}}</div>
+    {{/devs}}
+  </div>
+  </script>
+
+</body>
+</html>

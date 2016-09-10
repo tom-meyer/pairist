@@ -1,0 +1,35 @@
+#sidebar {
+  width: 200px;
+  background-color: lightseagreen;
+  border: 1px solid black;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+}
+
+#stage {
+  margin-left: 200px;
+}
+
+.team-pairing > * {
+  margin: 20px;
+}
+
+.track {
+  border: 1px solid black;
+  display: inline-block;
+  padding: 20px;
+}
+
+.track h1 {
+  font-size: 1.5em;
+  margin-bottom: 7px;
+}
+
+.dev {
+  background-color: lightblue;
+  border: 1px solid black;
+  display: inline-block;
+  padding: 7px 20px;
+}
