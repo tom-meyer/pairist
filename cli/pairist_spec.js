@@ -51,21 +51,33 @@ describe('Pairist', function() {
     });
   });
 
-  xdescribe('when there are 4 devs', function() {
-    it('creates two pairs with constraints', function() {
+  describe('when there are 4 devs with no constraints', function() {
+    it('creates many pairs', function() {
       var pairist = new Pairist();
 
-      var tom = developer('Tom').hasStory('Foo');
-      var phil = developer('Phil');
-      var kris = developer('Chris').hasStory('Bar');
-      var jenn = developer('Jenn');
+      var pairings = pairist.generatePairings([thom, phil, kris, jenn]);
 
-      var pairings = pairist.generate([tom, phil, kris, jenn]);
+      expect(pairings).toHavePairings([
+        Pairing(Pair(thom, phil), Pair(kris, jenn)),
+        Pairing(Pair(thom, kris), Pair(phil, jenn)),
+        Pairing(Pair(thom, jenn), Pair(phil, kris)),
+      ]);
+    });
+  });
 
-      var all_pairs = pairings.next();
-      expect(sortedPairings(pairings)).toEqual([
-        ['Chris', 'Phil'], ['Chris', 'Jenn'],
-        ['Tom', 'Phil'], ['Chris', 'Jenn'],
+  describe('when there are 4 devs with some constraints', function() {
+    it('creates many pairs', function() {
+      var pairist = new Pairist();
+
+      jenn.hasStory('Foo');
+      kris.hasStory('Bar');
+
+      var pairings = pairist.generatePairings([thom, phil, kris, jenn]);
+
+      expect(pairings).toHavePairings([
+        //Pairing(Pair(thom, phil), Pair(kris, jenn)), both kris and jenn have stories
+        Pairing(Pair(thom, kris), Pair(phil, jenn)),
+        Pairing(Pair(thom, jenn), Pair(phil, kris)),
       ]);
     });
   });
