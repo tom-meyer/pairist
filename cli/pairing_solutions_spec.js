@@ -32,7 +32,7 @@ describe('PairingSolutions', function() {
     expect(subject.listValid()).toEqual([pairing1, pairing2]);
   });
 
-  it('filters out pairings with pairs holding multiple stories', function() {
+  it('filters out pairings a pair holds multiple stories', function() {
     thom.setStory('Foo');
     phil.setStory('Bar');
     subject.add(Pairing(Pair(thom, phil)));
@@ -48,7 +48,7 @@ describe('PairingSolutions', function() {
     expect(subject.listValid()).toEqual([]);
   });
 
-  it('filters out pairings where devs are unpaired that are not marked as soloists', function() {
+  it('filters out pairings where devs are unpaired and are not marked as soloists', function() {
     subject.add(Pairing(Pair(thom), Pair(kris)));
 
     expect(subject.listValid()).toEqual([]);
@@ -89,7 +89,17 @@ describe('PairingSolutions', function() {
     expect(subject.listValid()).toEqual([]);
   });
 
-  it('??????', function() {
+  it('filters out pairings where free devs should have paired with a story owner', function() {
+    thom.setStory('Foo');
+    phil.setStory('Foo');
+    jenn.setStory('Bar');
+
+    subject.add(Pairing(Pair(thom, phil), Pair(kris), Pair(jenn)));
+
+    expect(subject.listValid()).toEqual([]);
+  });
+
+  it('accepts pairings where story owners get paired with free dev', function() {
     thom.setStory('Foo');
     phil.setStory('Foo');
     jenn.setStory('Bar');
@@ -100,7 +110,7 @@ describe('PairingSolutions', function() {
     expect(subject.listValid()).toEqual([pairing]);
   });
 
-  it('?????? more', function() {
+  it('accepts pairings where devs trio', function() {
     thom.setStory('Foo');
     phil.setStory('Foo');
     jenn.setStory('Foo');
