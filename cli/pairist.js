@@ -8,14 +8,9 @@ function Pairist() {
 }
 
 Pairist.prototype.generatePairings = function(devs) {
-  // Contains valid and invalid pairings
-  var all = [].concat(
-    pairingsWithStoryOwners(devs),
-    pairingsWithOnlyStorylessDevs(devs)
-  );
 
   var solutions = new PairingSolutions();
-  all.forEach(function(pairing) {
+  makePairings(devs).forEach(function(pairing) {
     solutions.add(pairing);
   });
 
@@ -51,50 +46,53 @@ PairingSolutions.prototype.listValid = function() {
 
 function makeGroups(devs) {
   var free = [];
-  var soloists = [];
-  var soloists_and_owners = [];
-  var withoutStory = [];
   var paired = [];
+  var devsByStory = {};
 
   devs.forEach(function(dev) {
     if (dev.solo) {
-      soloists.push(dev);
-      soloists_and_owners.push(dev);
+      paired.push(Pair(dev));
     } else if (dev.story) {
-      soloists_and_owners.push(dev);
-      free.push(dev);
+      if (dev.story in devsByStory) {
+        devsByStory[dev.story].push(dev);
+      } else {
+        devsByStory[dev.story] = [dev];
+      }
     } else {
-      withoutStory.push(dev);
       free.push(dev);
+    }
+  });
+
+  Object.keys(devsByStory).forEach(function(story) {
+    if (devsByStory[story].length > 1) {
+      paired.push(Pair.apply(null, devsByStory[story]));
+    } else {
+      free.push(devsByStory[story][0]);
     }
   });
 
   return {
     free: free,
-    soloists: soloists,
-    soloists_and_owners: soloists_and_owners,
-    withoutStory: withoutStory,
-    paired: paired
+    alreadyPaired: paired
   };
 }
 
-function pairingsWithStoryOwners(devs) {
+function makePairings(devs) {
   var groups = makeGroups(devs);
   var pairings = iterPairings(groups.free);
-  return combineThem(groups.soloists, pairings);
-}
-
-function pairingsWithOnlyStorylessDevs(devs) {
-  var groups = makeGroups(devs);
-  var storyless_pairings = iterPairings(groups.withoutStory);
-  return combineThem(groups.soloists_and_owners, storyless_pairings);
+  //console.log('PAIRINGS:', pairings.length);
+  //pairings.forEach(function(pairing) {
+  //  console.log('\nPAIRING:', stringifyAndSort(pairing));
+  //});
+  return combinePairs(groups.alreadyPaired, pairings);
 }
 
 function iterPairings(devs) {
   var result = [];
   if (devs.length == 0) {
     // no devs, do nothing
-  } else if (devs.length <= 2) {
+    result.push([]); // TODO avoid this
+  } else if (devs.length === 1) {
     result.push([devs]);
   } else {
     listSomePairs(devs).forEach(function(pair) {
@@ -110,12 +108,14 @@ function iterPairings(devs) {
 function listSomePairs(devs) {
   var pairs = [];
   if (devs.length % 2 == 0) {
-    // pair up the first dev with everyone else
+    // even number of devs, so pair up the first dev with everyone else
+    var first = devs[0];
     for(var i = 1; i < devs.length; ++i) {
-      pairs.push([devs[0], devs[i]]);
+      pairs.push([first, devs[i]]);
     }
+    pairs.push([first]); // allow for the possibility of the first dev soloing
   } else {
-    // pick soloists
+    // odd number of devs, so make a list of soloists
     for(var i = 0; i < devs.length; ++i) {
       pairs.push([devs[i]]);
     }
@@ -148,13 +148,13 @@ function isValid(pairing) {
     var pair = pairing[i];
 
     if (!pair || pair.length === 0) {
-      console.log('pairing has an falsy value or pair has no devs');
+      //console.log('pairing has an falsy value or pair has no devs');
       return false;
     }
 
     var isSoloist = pair.some(function(dev){return dev.solo});
     if (isSoloist && pair.length > 1) {
-      console.log('devs marked as soloists have been paired together');
+      //console.log('devs marked as soloists have been paired together');
       return false;
     }
 
@@ -162,7 +162,7 @@ function isValid(pairing) {
     if (!isSoloist && !hasStory && pair.length === 1) {
       unpairedFreeDevs++;
       if (unpairedFreeDevs > 1) {
-        console.log('there are more than one pairs with one dev')
+        //console.log('there are more than one pairs with one dev')
         return false;
       }
     }
@@ -188,12 +188,12 @@ function isValid(pairing) {
     }
 
     if (pairStories.length > 1) {
-      console.log('devs in same pair have different stories');
+      //console.log('devs in same pair have different stories');
       return false;
     }
 
     if (currentStory in stories) {
-      console.log('two pairs have the same story');
+      //console.log('two pairs have the same story');
       return false;
     }
 
@@ -201,12 +201,12 @@ function isValid(pairing) {
   };
 
   if (unpairedStoryOwners > 0 && unpairedFreeDevs > 0) {
-    console.log('there are unpaired story owners and unpaired free devs');
+    //console.log('there are unpaired story owners and unpaired free devs');
     return false;
   }
 
   if (unpairedStoryOwners > 0 && freeDevs > 0) {
-    console.log('there are more unpaired story owners than storyless pairs');
+    //console.log('there are more unpaired story owners than storyless pairs');
     return false;
   }
 
@@ -223,23 +223,12 @@ function uniqueStoryNames(pair) {
   return Object.keys(names);
 }
 
-function combineThem(soloists, pairings) {
-  soloists = soloists.map(function(x) {return Pair(x)});
+function combinePairs(alreadyPaired, pairings) {
   if (pairings.length == 0) {
-    return [soloists];
+    return [alreadyPaired];
   }
   return pairings.map(function(pairing) {
-    return soloists.concat(pairing);
-  });
-}
-
-function dedup(pairings) {
-  var hashed = pairings.reduce(function(accum, pairing) {
-    accum[stringifyAndSort(pairing)] = pairing;
-    return accum;
-  }, {});
-  return Object.keys(hashed).map(function(key) {
-    return hashed[key];
+    return alreadyPaired.concat(pairing);
   });
 }
 
