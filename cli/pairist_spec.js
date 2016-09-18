@@ -34,8 +34,8 @@ describe('Pairist', function() {
       });
     });
 
-    describe('when there are 2 devs with one constraint', function() {
-      it('creates no pairs', function() {
+    describe('when there are 2 devs with one story owner', function() {
+      it('creates one pairing', function() {
         var pairist = new Pairist();
         thom.setStory('Foo');
 
@@ -136,7 +136,7 @@ describe('Pairist', function() {
       });
     });
 
-    describe('when 2 devs are on the same story and 2 devs are free', function() {
+    describe('when 2 devs are on the same story, one dev is a story owner, and one dev is free', function() {
       it('creates two pairs', function() {
         var pairist = new Pairist();
 
@@ -153,7 +153,7 @@ describe('Pairist', function() {
     });
 
     describe('when 3 devs are on the same story and 2 devs are free', function() {
-      xit('creates two pairs', function() {
+      it('creates a trio and a pair', function() {
         var pairist = new Pairist();
 
         thom.setStory('Foo');
@@ -163,7 +163,7 @@ describe('Pairist', function() {
         var pairings = pairist.generatePairings([phil, thom, jenn, kris, pete]);
 
         expect(pairings).toHavePairings([
-          //Pairing(Pair(thom, phil), Pair(jenn, kris))
+          Pairing(Pair(thom, phil, jenn), Pair(kris, pete))
         ]);
       });
     });

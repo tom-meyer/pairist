@@ -1,4 +1,5 @@
 exports.Pairist = Pairist;
+exports.PairingSolutions = PairingSolutions;
 exports.Pair = Pair;
 exports.Pairing = Pairing;
 exports.Developer = Developer;
@@ -32,15 +33,20 @@ Pairist.prototype.generatePairings = function(devs) {
 }
 
 function PairingSolutions() {
-  this.pairings = [];
+  this.pairings = {};
 }
 
 PairingSolutions.prototype.add = function(pairing) {
-  this.pairings.push(pairing);
+  if (isValid(pairing)) {
+    var key = stringifyAndSort(pairing);
+    this.pairings[key] = pairing;
+  }
 }
 
 PairingSolutions.prototype.listValid = function() {
-  return dedup(this.pairings.filter(isValid));
+  return Object.keys(this.pairings).map(function(key) {
+    return this.pairings[key];
+  }, this);
 }
 
 function makeGroups(devs) {
@@ -72,16 +78,16 @@ function makeGroups(devs) {
   };
 }
 
-function pairingsWithOnlyStorylessDevs(devs) {
-  var groups = makeGroups(devs);
-  var storyless_pairings = iterPairings(groups.withoutStory);
-  return combineThem(groups.soloists_and_owners, storyless_pairings);
-}
-
 function pairingsWithStoryOwners(devs) {
   var groups = makeGroups(devs);
   var pairings = iterPairings(groups.free);
   return combineThem(groups.soloists, pairings);
+}
+
+function pairingsWithOnlyStorylessDevs(devs) {
+  var groups = makeGroups(devs);
+  var storyless_pairings = iterPairings(groups.withoutStory);
+  return combineThem(groups.soloists_and_owners, storyless_pairings);
 }
 
 function iterPairings(devs) {
@@ -131,23 +137,80 @@ function isValid(pairing) {
   if (!pairing) {
     return false;
   }
-  var eachPairHasOneOrZeroStories = pairing.every(function(pair) {
-    return uniqueStoryNames(pair).length <= 1;
-  });
 
-  /* var accum = {}; */
-  /* var allPairsHaveUniqueStories = true; */
-  /* pairing.forEach(function(pair) { */
-  /*   var sname = uniqueStoryNames(pair)[0]; */
-  /*   if (sname && (sname in accum)) { */
-  /*     allPairsHaveUniqueStories = false; */
-  /*   } else if (sname) { */
-  /*     accum[sname] = null; // value doesn't matter */
-  /*   } */
-  /*   return accum; */
-  /* }); */
+  var stories = {};
+  var unpairedStoryOwners = 0;
+  var unpairedFreeDevs = 0;
+  var storylessPairs = 0;
+  var freeDevs = 0;
 
-  return eachPairHasOneOrZeroStories; // && allPairsHaveUniqueStories;
+  for(var i = 0; i < pairing.length; ++i) {
+    var pair = pairing[i];
+
+    if (!pair || pair.length === 0) {
+      console.log('pairing has an falsy value or pair has no devs');
+      return false;
+    }
+
+    var isSoloist = pair.some(function(dev){return dev.solo});
+    if (isSoloist && pair.length > 1) {
+      console.log('devs marked as soloists have been paired together');
+      return false;
+    }
+
+    var hasStory = pair.some(function(dev){return dev.story});
+    if (!isSoloist && !hasStory && pair.length === 1) {
+      unpairedFreeDevs++;
+      if (unpairedFreeDevs > 1) {
+        console.log('there are more than one pairs with one dev')
+        return false;
+      }
+    }
+
+    if (hasStory && pair.length === 1) {
+      unpairedStoryOwners++;
+    }
+
+    if (!hasStory && pair.length > 1) {
+      storylessPairs++;
+      freeDevs += pair.length;
+    }
+
+    var pairStories = Object.keys(pair.reduce(function(accum, dev) {
+      if (dev.story) {
+        accum[dev.story] = null; // value not used
+      }
+      return accum;
+    }, {}));
+    var currentStory = pairStories[0];
+    if (!currentStory) {
+      continue;
+    }
+
+    if (pairStories.length > 1) {
+      console.log('devs in same pair have different stories');
+      return false;
+    }
+
+    if (currentStory in stories) {
+      console.log('two pairs have the same story');
+      return false;
+    }
+
+    stories[currentStory] = null; // value not used
+  };
+
+  if (unpairedStoryOwners > 0 && unpairedFreeDevs > 0) {
+    console.log('there are unpaired story owners and unpaired free devs');
+    return false;
+  }
+
+  if (unpairedStoryOwners > 0 && freeDevs > 0) {
+    console.log('there are more unpaired story owners than storyless pairs');
+    return false;
+  }
+
+  return true;
 }
 
 function uniqueStoryNames(pair) {
