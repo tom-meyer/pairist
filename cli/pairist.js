@@ -7,32 +7,40 @@ function Pairist() {
 }
 
 Pairist.prototype.generatePairings = function(devs) {
-  var groups = makeGroups(devs);
-  var pairings = iterPairings(groups.free);
-  pairings = combineThem(groups.soloists, pairings);
+  // Contains valid and invalid pairings
+  var all = [].concat(
+    pairingsWithStoryOwners(devs),
+    pairingsWithOnlyStorylessDevs(devs)
+  );
 
-  pairings = pairings.filter(isValid);
+  var solutions = new PairingSolutions();
+  all.forEach(function(pairing) {
+    solutions.add(pairing);
+  });
 
-  if (pairings.length === 0) {
-    var storyless_pairings = iterPairings(groups.withoutStory);
-    var more_pairings = combineThem(groups.soloists_and_owners, storyless_pairings);
-    pairings = dedup(pairings.concat(more_pairings));
-  }
-
-  pairings = pairings.filter(isValid);
+  var pairings = solutions.listValid();
 
   return {
     next: function() {
       while (pairings.length) {
         var index = Math.floor(Math.random() * pairings.length);
-        var pairing = pairings.splice(index, 1)[0];
-        //if (isValid(pairing)) {
-          return pairing;
-        //}
+        return pairings.splice(index, 1)[0];
       }
       return null;
     }
   };
+}
+
+function PairingSolutions() {
+  this.pairings = [];
+}
+
+PairingSolutions.prototype.add = function(pairing) {
+  this.pairings.push(pairing);
+}
+
+PairingSolutions.prototype.listValid = function() {
+  return dedup(this.pairings.filter(isValid));
 }
 
 function makeGroups(devs) {
@@ -62,6 +70,18 @@ function makeGroups(devs) {
     withoutStory: withoutStory,
     paired: paired
   };
+}
+
+function pairingsWithOnlyStorylessDevs(devs) {
+  var groups = makeGroups(devs);
+  var storyless_pairings = iterPairings(groups.withoutStory);
+  return combineThem(groups.soloists_and_owners, storyless_pairings);
+}
+
+function pairingsWithStoryOwners(devs) {
+  var groups = makeGroups(devs);
+  var pairings = iterPairings(groups.free);
+  return combineThem(groups.soloists, pairings);
 }
 
 function iterPairings(devs) {
@@ -108,6 +128,9 @@ function removeDevs(pair, devs) {
 }
 
 function isValid(pairing) {
+  if (!pairing) {
+    return false;
+  }
   var eachPairHasOneOrZeroStories = pairing.every(function(pair) {
     return uniqueStoryNames(pair).length <= 1;
   });

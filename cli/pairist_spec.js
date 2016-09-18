@@ -86,9 +86,8 @@ describe('Pairist', function() {
         var pairings = pairist.generatePairings([thom, phil, kris, jenn]);
 
         expect(pairings).toHavePairings([
-          //Pairing(Pair(thom, phil), Pair(kris, jenn)), both kris and jenn have stories
-          Pairing(Pair(thom, kris), Pair(phil, jenn)),
-          Pairing(Pair(thom, jenn), Pair(phil, kris)),
+          Pairing(Pair(jenn, thom), Pair(kris, phil)),
+          Pairing(Pair(jenn, phil), Pair(kris, thom)),
         ]);
       });
     });
@@ -153,21 +152,21 @@ describe('Pairist', function() {
       });
     });
 
-    /* describe('when 3 devs are on the same story and 2 devs are free', function() { */
-    /*   iit('creates two pairs', function() { */
-    /*     var pairist = new Pairist(); */
+    describe('when 3 devs are on the same story and 2 devs are free', function() {
+      xit('creates two pairs', function() {
+        var pairist = new Pairist();
 
-    /*     thom.setStory('Foo'); */
-    /*     phil.setStory('Foo'); */
-    /*     jenn.setStory('Foo'); */
+        thom.setStory('Foo');
+        phil.setStory('Foo');
+        jenn.setStory('Foo');
 
-    /*     var pairings = pairist.generatePairings([phil, thom, jenn, kris, pete]); */
+        var pairings = pairist.generatePairings([phil, thom, jenn, kris, pete]);
 
-    /*     expect(pairings).toHavePairings([ */
-    /*       //Pairing(Pair(thom, phil), Pair(jenn, kris)) */
-    /*     ]); */
-    /*   }); */
-    /* }); */
+        expect(pairings).toHavePairings([
+          //Pairing(Pair(thom, phil), Pair(jenn, kris))
+        ]);
+      });
+    });
   });
 
   function toHavePairings(expected_pairs) {
