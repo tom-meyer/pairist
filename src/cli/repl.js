@@ -3,8 +3,95 @@ module.exports = REPL;
 function REPL() {
   this.quit = false;
   this.tracks = [];
-  this.begin = this.printMenu;
-  //this.currentLoop = new MenuLoop();
+  //this.begin = this.printMenu;
+  //this.onInput = function(){};
+  this.currentLoop = new MainLoop(this);
+}
+
+REPL.prototype.begin = function() {
+  this.currentLoop.home();
+}
+
+REPL.prototype.onInput = function(line) {
+  this.currentLoop.onInput(line);
+}
+
+function MainLoop(repl) {
+  this.repl = repl;
+  this.devs = [];
+  this.menu = new NumberedMenu();
+}
+
+MainLoop.prototype.home = function() {
+  if (this.devs.length === 0) {
+    console.log('There are no developers, you must add some for this to be fruitful');
+  }
+  this.menu
+    .clear()
+    .item('Add developer(s)', this.beginAddDevLoop, this)
+    .item('Solve again', this.solveAgain, this)
+    .item('Quit', this.quit, this)
+    .defaultCallback(this.wtf, this)
+  this.menu.print();
+}
+
+MainLoop.prototype.quit = function(line) {
+  this.repl.quit = true;
+}
+
+MainLoop.prototype.beginAddDevLoop = function(line) {
+  console.log('beginAddDevLoop');
+}
+
+MainLoop.prototype.solveAgain = function(line) {
+  console.log('solve again');
+}
+
+MainLoop.prototype.wtf = function(line) {
+  console.log('say what?');
+}
+
+MainLoop.prototype.onInput = function(line) {
+  this.menu.select(line);
+}
+
+function NumberedMenu() {
+  this.clear();
+}
+
+NumberedMenu.prototype.clear = function() {
+  this.labels = [];
+  this.callbacks = [];
+  return this;
+}
+
+NumberedMenu.prototype.select = function(input) {
+  var selection = parseInt(input);
+  var cb = this.callbacks[selection];
+  if (cb) {
+    cb();
+  } else {
+    this.callDefault();
+  }
+}
+
+NumberedMenu.prototype.print = function() {
+  this.labels.forEach(function(label, index) {
+    console.log(index.toString(), label);
+  });
+}
+
+NumberedMenu.prototype.item = function(label, func, ctx) {
+  this.labels.push(label);
+  this.callbacks.push(function(){ func.call(ctx) });
+  return this;
+}
+
+NumberedMenu.prototype.defaultCallback = function(cb, ctx) {
+  this.callDefault = function() {
+    cb.call(ctx);
+  };
+  return this;
 }
 
 REPL.prototype.printMenu = function() {
