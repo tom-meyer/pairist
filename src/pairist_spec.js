@@ -23,12 +23,12 @@ describe('Pairist', function() {
     });
   });
 
-  describe('generatePairings', function() {
+  describe('listPairings', function() {
     describe('when there are 2 devs with no constraints', function() {
       it('creates one pairing', function() {
         var pairist = new Pairist();
 
-        var pairings = pairist.generatePairings([thom, phil]);
+        var pairings = pairist.listPairings([thom, phil]);
 
         expect(pairings).toHavePairings([Pairing(Pair(thom, phil))]);
       });
@@ -39,7 +39,7 @@ describe('Pairist', function() {
         var pairist = new Pairist();
         thom.setStory('Foo');
 
-        var pairings = pairist.generatePairings([thom, phil]);
+        var pairings = pairist.listPairings([thom, phil]);
 
         expect(pairings).toHavePairings([
           Pairing(Pair(thom, phil))
@@ -54,7 +54,7 @@ describe('Pairist', function() {
         thom.setStory('Foo');
         phil.setStory('Bar');
 
-        var pairings = pairist.generatePairings([thom, phil]);
+        var pairings = pairist.listPairings([thom, phil]);
 
         expect(pairings).toHavePairings([
           Pairing(Pair(thom), Pair(phil)),
@@ -66,7 +66,7 @@ describe('Pairist', function() {
       it('creates many pairs', function() {
         var pairist = new Pairist();
 
-        var pairings = pairist.generatePairings([thom, phil, kris, jenn]);
+        var pairings = pairist.listPairings([thom, phil, kris, jenn]);
 
         expect(pairings).toHavePairings([
           Pairing(Pair(thom, phil), Pair(kris, jenn)),
@@ -83,7 +83,7 @@ describe('Pairist', function() {
         jenn.setStory('Foo');
         kris.setStory('Bar');
 
-        var pairings = pairist.generatePairings([thom, phil, kris, jenn]);
+        var pairings = pairist.listPairings([thom, phil, kris, jenn]);
 
         expect(pairings).toHavePairings([
           Pairing(Pair(jenn, thom), Pair(kris, phil)),
@@ -96,7 +96,7 @@ describe('Pairist', function() {
       it('creates one pair and one solo', function() {
         var pairist = new Pairist();
 
-        var pairings = pairist.generatePairings([phil, thom, jenn]);
+        var pairings = pairist.listPairings([phil, thom, jenn]);
 
         expect(pairings).toHavePairings([
           Pairing(Pair(jenn), Pair(thom, phil)),
@@ -112,7 +112,7 @@ describe('Pairist', function() {
 
         thom.isSolo(true);
 
-        var pairings = pairist.generatePairings([phil, thom, jenn]);
+        var pairings = pairist.listPairings([phil, thom, jenn]);
 
         expect(pairings).toHavePairings([
           Pairing(Pair(thom), Pair(jenn, phil))
@@ -128,7 +128,7 @@ describe('Pairist', function() {
         phil.isSolo(true);
         jenn.isSolo(true);
 
-        var pairings = pairist.generatePairings([phil, thom, jenn]);
+        var pairings = pairist.listPairings([phil, thom, jenn]);
 
         expect(pairings).toHavePairings([
           Pairing(Pair(thom), Pair(jenn), Pair(phil))
@@ -144,7 +144,7 @@ describe('Pairist', function() {
         phil.setStory('Foo');
         jenn.setStory('Bar');
 
-        var pairings = pairist.generatePairings([phil, thom, jenn, kris]);
+        var pairings = pairist.listPairings([phil, thom, jenn, kris]);
 
         expect(pairings).toHavePairings([
           Pairing(Pair(thom, phil), Pair(jenn, kris))
@@ -160,7 +160,7 @@ describe('Pairist', function() {
         phil.setStory('Foo');
         jenn.setStory('Foo');
 
-        var pairings = pairist.generatePairings([phil, thom, jenn, kris, pete]);
+        var pairings = pairist.listPairings([phil, thom, jenn, kris, pete]);
 
         expect(pairings).toHavePairings([
           Pairing(Pair(thom, phil, jenn), Pair(kris, pete))

@@ -7,7 +7,7 @@ exports.Developer = Developer;
 function Pairist() {
 }
 
-Pairist.prototype.generatePairings = function(devs) {
+Pairist.prototype.listPairings = function(devs) {
 
   var solutions = new PairingSolutions();
   makePairings(devs).forEach(function(pairing) {
