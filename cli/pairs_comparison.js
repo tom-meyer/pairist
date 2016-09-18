@@ -30,11 +30,6 @@ function symmetric_difference(set1, set2, isEqualFunc) {
 }
 
 function isEqualPairing(pairing1, pairing2) {
-  /* console.log('---------'); */
-  /* console.log(stringifyAndSort(pairing1)); */
-  /* console.log(stringifyAndSort(pairing2)); */
-  /* console.log(stringifyAndSort(pairing1) === stringifyAndSort(pairing2)); */
-  /* console.log('---------'); */
   return stringifyAndSort(pairing1) === stringifyAndSort(pairing2);
 }
 
