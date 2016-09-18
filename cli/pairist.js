@@ -10,14 +10,25 @@ Pairist.prototype.generatePairings = function(devs) {
   var groups = makeGroups(devs);
   var pairings = iterPairings(groups.free);
   pairings = combineThem(groups.soloists, pairings);
+
+  pairings = pairings.filter(isValid);
+
+  if (pairings.length === 0) {
+    var storyless_pairings = iterPairings(groups.withoutStory);
+    var more_pairings = combineThem(groups.soloists_and_owners, storyless_pairings);
+    pairings = dedup(pairings.concat(more_pairings));
+  }
+
+  pairings = pairings.filter(isValid);
+
   return {
     next: function() {
       while (pairings.length) {
         var index = Math.floor(Math.random() * pairings.length);
         var pairing = pairings.splice(index, 1)[0];
-        if (isValid(pairing)) {
+        //if (isValid(pairing)) {
           return pairing;
-        }
+        //}
       }
       return null;
     }
@@ -27,12 +38,19 @@ Pairist.prototype.generatePairings = function(devs) {
 function makeGroups(devs) {
   var free = [];
   var soloists = [];
+  var soloists_and_owners = [];
+  var withoutStory = [];
   var paired = [];
 
   devs.forEach(function(dev) {
     if (dev.solo) {
       soloists.push(dev);
+      soloists_and_owners.push(dev);
+    } else if (dev.story) {
+      soloists_and_owners.push(dev);
+      free.push(dev);
     } else {
+      withoutStory.push(dev);
       free.push(dev);
     }
   });
@@ -40,6 +58,8 @@ function makeGroups(devs) {
   return {
     free: free,
     soloists: soloists,
+    soloists_and_owners: soloists_and_owners,
+    withoutStory: withoutStory,
     paired: paired
   };
 }
@@ -88,10 +108,33 @@ function removeDevs(pair, devs) {
 }
 
 function isValid(pairing) {
-  return pairing.every(function(pair) {
-    var stories = pair.map(function(dev) {return dev.story}).filter(function(x){return x});
-    return stories.length <= 1;
+  var eachPairHasOneOrZeroStories = pairing.every(function(pair) {
+    return uniqueStoryNames(pair).length <= 1;
   });
+
+  /* var accum = {}; */
+  /* var allPairsHaveUniqueStories = true; */
+  /* pairing.forEach(function(pair) { */
+  /*   var sname = uniqueStoryNames(pair)[0]; */
+  /*   if (sname && (sname in accum)) { */
+  /*     allPairsHaveUniqueStories = false; */
+  /*   } else if (sname) { */
+  /*     accum[sname] = null; // value doesn't matter */
+  /*   } */
+  /*   return accum; */
+  /* }); */
+
+  return eachPairHasOneOrZeroStories; // && allPairsHaveUniqueStories;
+}
+
+function uniqueStoryNames(pair) {
+  var names = pair.reduce(function(accum, dev) {
+    if (dev.story) {
+      accum[dev.story] = null; // value doesn't matter
+    }
+    return accum;
+  }, {});
+  return Object.keys(names);
 }
 
 function combineThem(soloists, pairings) {
@@ -102,6 +145,24 @@ function combineThem(soloists, pairings) {
   return pairings.map(function(pairing) {
     return soloists.concat(pairing);
   });
+}
+
+function dedup(pairings) {
+  var hashed = pairings.reduce(function(accum, pairing) {
+    accum[stringifyAndSort(pairing)] = pairing;
+    return accum;
+  }, {});
+  return Object.keys(hashed).map(function(key) {
+    return hashed[key];
+  });
+}
+
+function stringifyAndSort(pairing) {
+  return '(' + pairing.map(function(pair) {
+    return pair.map(function(dev) {
+      return dev.name;
+    }).sort().join('&');
+  }).sort().join(',') + ')';
 }
 
 function Developer(name) {

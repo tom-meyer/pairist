@@ -41,19 +41,24 @@ describe('Pairist', function() {
 
         var pairings = pairist.generatePairings([thom, phil]);
 
-        expect(pairings).toHavePairings([Pairing(Pair(thom, phil))]);
+        expect(pairings).toHavePairings([
+          Pairing(Pair(thom, phil))
+        ]);
       });
     });
 
-    describe('when there are 2 devs with too many constraints', function() {
-      it('creates no pairs', function() {
+    describe('when there are 2 devs with differing stories', function() {
+      it('creates two solo pairs', function() {
         var pairist = new Pairist();
+
         thom.setStory('Foo');
-        phil.setStory('Foo');
+        phil.setStory('Bar');
 
         var pairings = pairist.generatePairings([thom, phil]);
 
-        expect(pairings).toHavePairings([]);
+        expect(pairings).toHavePairings([
+          Pairing(Pair(thom), Pair(phil)),
+        ]);
       });
     });
 
@@ -72,7 +77,7 @@ describe('Pairist', function() {
     });
 
     describe('when there are 4 devs with some constraints', function() {
-      it('creates many pairs', function() {
+      it('creates two pairs', function() {
         var pairist = new Pairist();
 
         jenn.setStory('Foo');
@@ -131,6 +136,38 @@ describe('Pairist', function() {
         ]);
       });
     });
+
+    describe('when 2 devs are on the same story and 2 devs are free', function() {
+      it('creates two pairs', function() {
+        var pairist = new Pairist();
+
+        thom.setStory('Foo');
+        phil.setStory('Foo');
+        jenn.setStory('Bar');
+
+        var pairings = pairist.generatePairings([phil, thom, jenn, kris]);
+
+        expect(pairings).toHavePairings([
+          Pairing(Pair(thom, phil), Pair(jenn, kris))
+        ]);
+      });
+    });
+
+    /* describe('when 3 devs are on the same story and 2 devs are free', function() { */
+    /*   iit('creates two pairs', function() { */
+    /*     var pairist = new Pairist(); */
+
+    /*     thom.setStory('Foo'); */
+    /*     phil.setStory('Foo'); */
+    /*     jenn.setStory('Foo'); */
+
+    /*     var pairings = pairist.generatePairings([phil, thom, jenn, kris, pete]); */
+
+    /*     expect(pairings).toHavePairings([ */
+    /*       //Pairing(Pair(thom, phil), Pair(jenn, kris)) */
+    /*     ]); */
+    /*   }); */
+    /* }); */
   });
 
   function toHavePairings(expected_pairs) {
