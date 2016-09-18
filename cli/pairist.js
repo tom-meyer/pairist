@@ -7,12 +7,14 @@ function Pairist() {
 }
 
 Pairist.prototype.generatePairings = function(devs) {
-  var all_pairings = iterPairings(devs);
+  var groups = makeGroups(devs);
+  var pairings = iterPairings(groups.free);
+  pairings = combineThem(groups.soloists, pairings);
   return {
     next: function() {
-      while (all_pairings.length) {
-        var index = Math.floor(Math.random() * all_pairings.length);
-        var pairing = all_pairings.splice(index, 1)[0];
+      while (pairings.length) {
+        var index = Math.floor(Math.random() * pairings.length);
+        var pairing = pairings.splice(index, 1)[0];
         if (isValid(pairing)) {
           return pairing;
         }
@@ -22,9 +24,31 @@ Pairist.prototype.generatePairings = function(devs) {
   };
 }
 
+function makeGroups(devs) {
+  var free = [];
+  var soloists = [];
+  var paired = [];
+
+  devs.forEach(function(dev) {
+    if (dev.solo) {
+      soloists.push(dev);
+    } else {
+      free.push(dev);
+    }
+  });
+
+  return {
+    free: free,
+    soloists: soloists,
+    paired: paired
+  };
+}
+
 function iterPairings(devs) {
   var result = [];
-  if (devs.length <= 2) {
+  if (devs.length == 0) {
+    // no devs, do nothing
+  } else if (devs.length <= 2) {
     result.push([devs]);
   } else {
     listSomePairs(devs).forEach(function(pair) {
@@ -70,12 +94,29 @@ function isValid(pairing) {
   });
 }
 
+function combineThem(soloists, pairings) {
+  soloists = soloists.map(function(x) {return Pair(x)});
+  if (pairings.length == 0) {
+    return [soloists];
+  }
+  return pairings.map(function(pairing) {
+    return soloists.concat(pairing);
+  });
+}
+
 function Developer(name) {
   this.name = name;
+  this.story = null;
+  this.solo = false;
 }
 
 Developer.prototype.setStory = function(story) {
   this.story = story;
+  return this;
+};
+
+Developer.prototype.isSolo = function(b) {
+  this.solo = b;
   return this;
 };
 

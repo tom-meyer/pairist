@@ -101,6 +101,36 @@ describe('Pairist', function() {
         ]);
       });
     });
+
+    describe('when a dev is marked as solo', function() {
+      it('creates one pair and one solo "pair"', function() {
+        var pairist = new Pairist();
+
+        thom.isSolo(true);
+
+        var pairings = pairist.generatePairings([phil, thom, jenn]);
+
+        expect(pairings).toHavePairings([
+          Pairing(Pair(thom), Pair(jenn, phil))
+        ]);
+      });
+    });
+
+    describe('when all devs are marked as solo', function() {
+      it('creates three solo "pairs"', function() {
+        var pairist = new Pairist();
+
+        thom.isSolo(true);
+        phil.isSolo(true);
+        jenn.isSolo(true);
+
+        var pairings = pairist.generatePairings([phil, thom, jenn]);
+
+        expect(pairings).toHavePairings([
+          Pairing(Pair(thom), Pair(jenn), Pair(phil))
+        ]);
+      });
+    });
   });
 
   function toHavePairings(expected_pairs) {
