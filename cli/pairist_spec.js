@@ -1,4 +1,7 @@
-var Pairist = require('./pairist');
+var Pairist = require('./pairist').Pairist;
+var Developer = require('./pairist').Developer;
+var Pairing = require('./pairist').Pairing;
+var Pair = require('./pairist').Pair;
 var PairsComparison = require('./pairs_comparison')
 
 describe('Pairist', function() {
@@ -9,11 +12,11 @@ describe('Pairist', function() {
   var pete;
 
   beforeEach(function(){
-    thom = developer('Tom');
-    phil = developer('Phil');
-    kris = developer('Chris');
-    jenn = developer('Jenn');
-    pete = developer('Peter');
+    thom = new Developer('Tom');
+    phil = new Developer('Phil');
+    kris = new Developer('Chris');
+    jenn = new Developer('Jenn');
+    pete = new Developer('Peter');
 
     this.addMatchers({
       toHavePairings: toHavePairings
@@ -34,7 +37,7 @@ describe('Pairist', function() {
     describe('when there are 2 devs with one constraint', function() {
       it('creates no pairs', function() {
         var pairist = new Pairist();
-        thom.hasStory('Foo');
+        thom.setStory('Foo');
 
         var pairings = pairist.generatePairings([thom, phil]);
 
@@ -45,8 +48,8 @@ describe('Pairist', function() {
     describe('when there are 2 devs with too many constraints', function() {
       it('creates no pairs', function() {
         var pairist = new Pairist();
-        thom.hasStory('Foo');
-        phil.hasStory('Foo');
+        thom.setStory('Foo');
+        phil.setStory('Foo');
 
         var pairings = pairist.generatePairings([thom, phil]);
 
@@ -72,8 +75,8 @@ describe('Pairist', function() {
       it('creates many pairs', function() {
         var pairist = new Pairist();
 
-        jenn.hasStory('Foo');
-        kris.hasStory('Bar');
+        jenn.setStory('Foo');
+        kris.setStory('Bar');
 
         var pairings = pairist.generatePairings([thom, phil, kris, jenn]);
 
@@ -100,17 +103,6 @@ describe('Pairist', function() {
     });
   });
 
-  function developer(name) {
-    var dev = {
-      name: name
-    };
-    dev.hasStory = function(story) {
-      dev.story = story;
-      return dev;
-    };
-    return dev
-  }
-
   function toHavePairings(expected_pairs) {
     var comparison = new PairsComparison(enumerate(this.actual), expected_pairs.slice());
     this.message = function() {
@@ -133,13 +125,5 @@ describe('Pairist', function() {
       pairings.push(pairing);
     }
     return pairings;
-  }
-
-  function Pair() { // an alias for an array literal
-    return Array.prototype.slice.call(arguments);
-  }
-
-  function Pairing() { // an alias for an array literal
-    return Array.prototype.slice.call(arguments);
   }
 });

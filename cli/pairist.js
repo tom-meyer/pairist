@@ -1,4 +1,7 @@
-module.exports = Pairist;
+exports.Pairist = Pairist;
+exports.Pair = Pair;
+exports.Pairing = Pairing;
+exports.Developer = Developer;
 
 function Pairist() {
 }
@@ -66,3 +69,17 @@ function isValid(pairing) {
     return stories.length <= 1;
   });
 }
+
+function Developer(name) {
+  this.name = name;
+}
+
+Developer.prototype.setStory = function(story) {
+  this.story = story;
+  return this;
+};
+
+// Both of these are syntactic sugar. Just an alias
+// for an array literal. Don't use 'new' with these.
+function Pair()    { return Array.prototype.slice.call(arguments); }
+function Pairing() { return Array.prototype.slice.call(arguments); }

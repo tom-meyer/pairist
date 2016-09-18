@@ -1,10 +1,13 @@
+var Developer = require('./pairist').Developer;
+var Pairing = require('./pairist').Pairing;
+var Pair = require('./pairist').Pair;
 var PairsComparison = require('./pairs_comparison');
 
 describe('PairsComparison', function() {
-  var thom = developer('Tom');
-  var phil = developer('Phil');
-  var jenn = developer('Jenn');
-  var kris = developer('Chris');
+  var thom = new Developer('Tom');
+  var phil = new Developer('Phil');
+  var jenn = new Developer('Jenn');
+  var kris = new Developer('Chris');
 
   it('equates pairings that are exactly the same', function() {
     var lhs_pairings = [Pairing(Pair(thom, phil))];
@@ -57,23 +60,4 @@ describe('PairsComparison', function() {
     expect(subject.uniqueToLHS).toEqual([]);
     expect(subject.uniqueToRHS).toEqual([]);
   });
-
-  function developer(name) {
-    var dev = {
-      name: name
-    };
-    dev.hasStory = function(story) {
-      dev.story = story;
-      return dev;
-    };
-    return dev
-  }
-
-  function Pair() { // an alias for an array literal
-    return Array.prototype.slice.call(arguments);
-  }
-
-  function Pairing() { // an alias for an array literal
-    return Array.prototype.slice.call(arguments);
-  }
 });
