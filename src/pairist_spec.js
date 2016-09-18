@@ -170,7 +170,7 @@ describe('Pairist', function() {
   });
 
   function toHavePairings(expected_pairs) {
-    var comparison = new PairsComparison(enumerate(this.actual), expected_pairs.slice());
+    var comparison = new PairsComparison(this.actual, expected_pairs.slice());
     this.message = function() {
       var msg = '';
       if (comparison.uniqueToRHS.length) {
@@ -183,13 +183,5 @@ describe('Pairist', function() {
       return msg;
     }
     return comparison.isEqual;
-  }
-
-  function enumerate(iterator) {
-    var pairing, pairings = [];
-    while(pairing = iterator.next()) {
-      pairings.push(pairing);
-    }
-    return pairings;
   }
 });

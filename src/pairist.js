@@ -14,17 +14,7 @@ Pairist.prototype.generatePairings = function(devs) {
     solutions.add(pairing);
   });
 
-  var pairings = solutions.listValid();
-
-  return {
-    next: function() {
-      while (pairings.length) {
-        var index = Math.floor(Math.random() * pairings.length);
-        return pairings.splice(index, 1)[0];
-      }
-      return null;
-    }
-  };
+  return solutions.listValid();
 }
 
 function PairingSolutions() {
