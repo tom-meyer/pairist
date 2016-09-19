@@ -70,6 +70,7 @@ MainLoop.prototype.home = function() {
   this.menu
     .clear()
     .item('Add developer(s)', this.beginAddDevLoop, this)
+    .item('Toggle solo status of a developer', this.beginSoloistLoop, this)
     .item('Solve again', this.solveAgain, this)
     .item('Quit', this.quit, this)
     .defaultCallback(this.wtf, this)
@@ -88,12 +89,38 @@ MainLoop.prototype.beginAddDevLoop = function(line) {
   this.repl.pushLoop(new AddDevLoop(this.repl));
 }
 
+MainLoop.prototype.beginSoloistLoop = function(line) {
+  this.repl.pushLoop(new ToggleSoloistLoop(this.repl));
+}
+
 MainLoop.prototype.solveAgain = function(line) {
   console.log('solve again');
+  this.home();
 }
 
 MainLoop.prototype.wtf = function(line) {
   console.log('say what?');
+}
+
+function ToggleSoloistLoop(repl) {
+  this.repl = repl;
+}
+
+ToggleSoloistLoop.prototype.home = function() {
+  console.log('Who?');
+}
+
+ToggleSoloistLoop.prototype.onInput = function(input) {
+  var dev = this.repl.devs.filter(function(dev) { return dev.name === input })[0];
+  if (dev) {
+    dev.solo = !dev.solo;
+    this.repl.popLoop();
+  } else if (input) {
+    console.log('I\'m not familiar with', input, 'maybe we should hire them?');
+    this.home();
+  } else {
+    this.repl.popLoop();
+  }
 }
 
 function AddDevLoop(repl) {
