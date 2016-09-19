@@ -1,6 +1,6 @@
 # Pairist
 
-A tool for developer pairing.
+A tool for developer pairing. Very alpha, currenly under development.
 
 Running
 -------
@@ -20,3 +20,13 @@ Upcoming
 * Pairing history
 * git-base storage for easy collaboration
 * HTML UI
+
+Testing
+-------
+
+Only the core pairing code is tested. Need to
+figure out a good way to test the cli parts.
+
+Install npm package `jasmine-node`. (Look into switching to normal jasmine)
+
+    jasmine-node src/*_spec.js
