@@ -1,7 +1,27 @@
 #!/usr/local/bin/node
 
-//process.argv.forEach(function (val, index, array) {
-//  console.log(index + ': ' + val);
-//});
+const REPL = require('../src/cli/repl');
+const readline = require('readline');
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
 
-console.log(process.argv[2])
+var repl = new REPL();
+repl.begin();
+rl.prompt();
+
+rl.on('line', function(line) {
+  repl.onInput(line.trim());
+  if(repl.quit) {
+    shutdown();
+  } else {
+    rl.prompt();
+  }
+}).on('close', shutdown);
+
+function shutdown() {
+  repl.finish();
+  console.log('_.~"(_.~"(_.~"(_.~"(_.~"(');
+  process.exit(0);
+}
