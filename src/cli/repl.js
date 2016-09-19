@@ -1,3 +1,4 @@
+var fs = require('fs');
 var Pairist = require('../pairist').Pairist;
 var Developer = require('../pairist').Developer;
 
@@ -11,6 +12,7 @@ function REPL() {
 }
 
 REPL.prototype.begin = function() {
+  this.restoreFromDisk();
   this.loopStack[0].home();
 }
 
@@ -29,6 +31,31 @@ REPL.prototype.pushLoop = function(loop) {
 REPL.prototype.popLoop = function() {
   this.loopStack.shift();
   this.loopStack[0].home();
+}
+
+REPL.prototype.restoreFromDisk = function() {
+  try {
+    this.devs = JSON.parse(fs.readFileSync('pairist.developers.json', 'utf8'));
+  } catch (e) {
+    this.devs = [];
+  }
+}
+
+REPL.prototype.addDeveloper = function(dev) {
+  this.devs.push(dev);
+  this.save();
+}
+
+REPL.prototype.save = function() {
+  try {
+    fs.writeFileSync('pairist.developers.json', JSON.stringify(this.devs), 'utf8');
+  } catch (e) {
+    console.warn('failed to save developer');
+  }
+}
+
+REPL.prototype.getDevByName = function(name) {
+  return this.devs.filter(function(dev) { return dev.name === name })[0];
 }
 
 function MainLoop(repl) {
@@ -123,10 +150,11 @@ AssignStoryLoop.prototype.home = function() {
 AssignStoryLoop.prototype.onInput = function(input) {
   if (this.target) {
     this.target.story = input;
+    this.repl.save();
     this.repl.popLoop();
     return;
   }
-  var dev = this.repl.devs.filter(function(dev) { return dev.name === input })[0];
+  var dev = this.repl.getDevByName(input);
   if (dev) {
     console.log('Great, what is the story', dev.name, 'will be on?');
     this.target = dev;
@@ -147,9 +175,10 @@ ToggleSoloistLoop.prototype.home = function() {
 }
 
 ToggleSoloistLoop.prototype.onInput = function(input) {
-  var dev = this.repl.devs.filter(function(dev) { return dev.name === input })[0];
+  var dev = this.repl.getDevByName(input);
   if (dev) {
     dev.solo = !dev.solo;
+    this.repl.save();
     this.repl.popLoop();
   } else if (input) {
     console.log('I\'m not familiar with', input, 'maybe we should hire them?');
@@ -169,7 +198,7 @@ AddDevLoop.prototype.home = function() {
 
 AddDevLoop.prototype.onInput = function(input) {
   if (input) {
-    this.repl.devs.push(new Developer(input));
+    this.repl.addDeveloper(new Developer(input));
   } else {
     this.repl.popLoop();
   }
