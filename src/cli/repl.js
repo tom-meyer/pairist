@@ -1,3 +1,6 @@
+var Pairist = require('../pairist').Pairist;
+var Developer = require('../pairist').Developer;
+
 module.exports = REPL;
 
 function REPL() {
@@ -9,6 +12,9 @@ function REPL() {
 
 REPL.prototype.begin = function() {
   this.loopStack[0].home();
+}
+
+REPL.prototype.finish = function(line) {
 }
 
 REPL.prototype.onInput = function(line) {
@@ -30,11 +36,36 @@ function MainLoop(repl) {
   this.menu = new NumberedMenu();
 }
 
+function printPairing(pairing) {
+  pairing.forEach(function(pair) {
+    var pairStr = '\t';
+    pairStr += pair.map(function(dev) { return dev.name; }).join(' & ');
+    if (pair[0].solo) {
+      pairStr += ' (soloing)';
+    }
+    console.log(pairStr);
+  });
+}
+
+function printDevs(devs) {
+  var devsList = '\t' + devs.map(function(dev) {
+    return dev.name;
+  }).join(', ');
+  console.log(devsList);
+}
+
 MainLoop.prototype.home = function() {
   if (this.repl.devs.length === 0) {
     console.log('There are no developers, you must add some for this to be fruitful');
   } else {
-    console.log('Current free developers', this.repl.devs);
+    var pairist = new Pairist();
+    var pairings = pairist.listPairings(this.repl.devs);
+    console.log('Current team')
+    printDevs(this.repl.devs);
+    console.log('There are', pairings.length, 'solutions. How\'s this?');
+
+    var index = Math.floor(Math.random() * pairings.length);
+    printPairing(pairings[index]);
   }
   this.menu
     .clear()
@@ -73,9 +104,9 @@ AddDevLoop.prototype.home = function() {
   console.log('Add developers by name, one per line. Enter empty line to finish');
 }
 
-AddDevLoop.prototype.onInput = function(line) {
-  if (line) {
-    this.repl.devs.push(line);
+AddDevLoop.prototype.onInput = function(input) {
+  if (input) {
+    this.repl.devs.push(new Developer(input));
   } else {
     this.repl.popLoop();
   }
@@ -118,54 +149,4 @@ NumberedMenu.prototype.defaultCallback = function(cb, ctx) {
     cb.call(ctx);
   };
   return this;
-}
-
-REPL.prototype.printMenu = function() {
-  console.log('1 New track');
-  console.log('2 Show');
-  console.log('3 New developer');
-  console.log('4 Solve');
-  console.log('5 Quit');
-  this.onInput = this.onSelection;
-}
-
-REPL.prototype.onSelection = function(line) {
-  if (line === '1') {
-    this.createTrack();
-  } else if (line === '2') {
-    this.quit = true;
-  } else {
-    console.log('Huh?');
-    this.printMenu();
-  }
-}
-
-REPL.prototype.createTrack = function() {
-  this.current = {
-    name: null,
-    devs: []
-  };
-  this.tracks.push(this.current);
-  console.log('Enter track name');
-  this.onInput = this.onTrackName;
-}
-
-REPL.prototype.onTrackName = function(line) {
-  this.current.name = line;
-  console.log('Enter dev name (enter blank line when done)');
-  this.onInput = this.onDevName;
-}
-
-REPL.prototype.onDevName = function(line) {
-  if (line === '') {
-    this.printMenu();
-    return;
-  }
-  this.current.devs.push(line);
-  console.log('Enter dev name (enter blank line when done)');
-  this.onInput = this.onDevName;
-}
-
-REPL.prototype.finish = function(line) {
-  console.log(JSON.stringify(this.tracks));
 }
