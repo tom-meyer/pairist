@@ -82,6 +82,12 @@ REPL.prototype.addDeveloper = function(dev) {
   this.save();
 }
 
+REPL.prototype.removeDeveloper = function(dev) {
+  var index = this.devs.indexOf(dev);
+  this.devs.splice(index, 1);
+  this.save();
+}
+
 REPL.prototype.save = function() {
   try {
     fs.writeFileSync('pairist.developers.json', JSON.stringify(this.devs), 'utf8');

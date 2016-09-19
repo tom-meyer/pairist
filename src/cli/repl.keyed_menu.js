@@ -28,15 +28,21 @@ KeyedMenu.prototype.print = function() {
 }
 
 KeyedMenu.prototype.item = function(key, label, func, ctx) {
+  if (!func || !func.call) {
+    throw new TypeError(func + ' not callable');
+  }
   this.keys.push(key);
   this.labels.push(label);
   this.callbacks.push(function(){ func.call(ctx) });
   return this;
 }
 
-KeyedMenu.prototype.defaultCallback = function(cb, ctx) {
+KeyedMenu.prototype.defaultCallback = function(func, ctx) {
+  if (!func || !func.call) {
+    throw new TypeError(func + ' not callable');
+  }
   this.callDefault = function() {
-    cb.call(ctx);
+    func.call(ctx);
   };
   return this;
 }
