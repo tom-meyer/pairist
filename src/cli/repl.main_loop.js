@@ -22,7 +22,7 @@ MainLoop.prototype.home = function() {
     .item('e', 'Edit developers', this.beginLoopFunc(RC.EditDevLoop), this)
     .item('q', 'Quit', this.quit, this)
     .defaultCallback(this.wtf, this)
-  this.menu.print();
+    .print();
 }
 
 MainLoop.prototype.onInput = function(line) {

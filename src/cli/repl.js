@@ -96,6 +96,14 @@ REPL.prototype.save = function() {
   }
 }
 
+REPL.prototype.getDevById = function(id) {
+  return this.devs.filter(function(dev) {
+    return dev.id == id;
+  })[0];
+}
+
 REPL.prototype.getDevByName = function(name) {
-  return this.devs.filter(function(dev) { return dev.name === name })[0];
+  return this.devs.filter(function(dev) {
+    return dev.name === name;
+  })[0];
 }

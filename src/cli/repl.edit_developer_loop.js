@@ -16,7 +16,7 @@ EditDevLoop.prototype.home = function() {
     .item('d', 'Delete developer', this.beginLoopFunc(DeleteLoop), this)
     .item('b', 'Go back to main menu', this.goBack, this)
     .defaultCallback(this.wtf, this)
-  this.menu.print();
+    .print();
 }
 
 EditDevLoop.prototype.wtf = function() {
@@ -47,7 +47,11 @@ AddLoop.prototype.home = function() {
 
 AddLoop.prototype.onInput = function(input) {
   if (input) {
-    this.repl.addDeveloper(new Developer(input));
+    var suffix = '';
+    while(suffix.length < 8) {
+      suffix += '0123345679ABCDEF'[Math.floor(Math.random() * 16)];
+    }
+    this.repl.addDeveloper(new Developer(input+suffix, input));
   } else {
     this.repl.popLoop();
   }
@@ -55,15 +59,41 @@ AddLoop.prototype.onInput = function(input) {
 
 function RenameLoop(repl) {
   this.repl = repl;
+  this.menu = new RC.NumberedMenu();
 }
 
 RenameLoop.prototype.home = function() {
   console.log('Rename developer.. Actually, this is unsupported. LOL')
-  this.repl.popLoop();
+  this.menu
+    .clear()
+    .defaultCallback(this.wtf, this);
+
+  this.repl.devs.forEach(function(dev) {
+    this.menu.item(dev.name, this.renameFunc(dev.id), this);
+  }, this);
+
+  this.menu.print();
 }
 
 RenameLoop.prototype.onInput = function(input) {
-  this.repl.popLoop();
+  if (this.devToRename) {
+    this.devToRename.name = input;
+    this.repl.save();
+    this.repl.popLoop();
+  } else {
+    this.menu.select(input);
+  }
+}
+
+RenameLoop.prototype.renameFunc = function(devId) {
+  return function() {
+    this.devToRename = this.repl.getDevById(devId);
+    console.log('Enter name');
+  }
+}
+
+RenameLoop.prototype.wtf = function() {
+  console.log('works');
 }
 
 function DeleteLoop(repl) {
