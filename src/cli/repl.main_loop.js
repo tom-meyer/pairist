@@ -17,7 +17,8 @@ MainLoop.prototype.home = function() {
   this.menu
     .clear()
     .item('r', 'Suggest another pairing', this.solveAgain, this)
-    .item('a', 'Assign/unassign story', this.beginLoopFunc(RC.AddLoop), this)
+    .item('p', 'Manually pair developers', this.beginLoopFunc(RC.PairUpLoop), this)
+    .item('a', 'Assign/unassign story', this.beginLoopFunc(RC.AssignStoryLoop), this)
     .item('s', 'Toggle solo status', this.beginLoopFunc(RC.ToggleSoloistLoop), this)
     .item('e', 'Edit developers', this.beginLoopFunc(RC.EditDevLoop), this)
     .item('q', 'Quit', this.quit, this)
