@@ -1,6 +1,6 @@
 #!/usr/local/bin/node
 
-const REPL = require('../src/cli/repl');
+const REPL = require('../src/cli/repl').REPL;
 const readline = require('readline');
 const rl = readline.createInterface({
   input: process.stdin,
