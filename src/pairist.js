@@ -77,39 +77,38 @@ function makePairings(devs) {
   return combinePairs(groups.alreadyPaired, pairings);
 }
 
+function combinePairs(alreadyPaired, pairings) {
+  if (pairings.length == 0) {
+    return [alreadyPaired];
+  }
+  return pairings.map(function(pairing) {
+    return alreadyPaired.concat(pairing);
+  });
+}
+
 function iterPairings(devs) {
   var result = [];
   if (devs.length == 0) {
     // no devs, do nothing
-    result.push([]); // TODO avoid this
   } else if (devs.length === 1) {
     result.push([devs]);
   } else {
-    listSomePairs(devs).forEach(function(pair) {
+    var tail = devs.slice();
+    var head = tail.shift();
+    pairUpDev(head, tail).forEach(function(pair) {
       var remaining = removeDevs(pair, devs);
-      iterPairings(remaining).forEach(function(pairings) {
-        result.push([pair].concat(pairings));
-      });
+      var pairings = iterPairings(remaining);
+      result = result.concat(combinePairs([pair], pairings));
     });
   }
   return result;
 }
 
-function listSomePairs(devs) {
-  var pairs = [];
-  if (devs.length % 2 == 0) {
-    // even number of devs, so pair up the first dev with everyone else
-    var first = devs[0];
-    for(var i = 1; i < devs.length; ++i) {
-      pairs.push([first, devs[i]]);
-    }
-    pairs.push([first]); // allow for the possibility of the first dev soloing
-  } else {
-    // odd number of devs, so make a list of soloists
-    for(var i = 0; i < devs.length; ++i) {
-      pairs.push([devs[i]]);
-    }
-  }
+function pairUpDev(head, tail) {
+  var pairs = [[head]]; // allow for the possibility of the first dev soloing
+  tail.forEach(function(dev) {
+    pairs.push([head, dev]);
+  });
   return pairs;
 }
 
@@ -200,15 +199,6 @@ function uniqueStoryNames(pair) {
     return dev.story;
   }).filter(function(story, index, self) {
     return self.indexOf(story) === index;
-  });
-}
-
-function combinePairs(alreadyPaired, pairings) {
-  if (pairings.length == 0) {
-    return [alreadyPaired];
-  }
-  return pairings.map(function(pairing) {
-    return alreadyPaired.concat(pairing);
   });
 }
 
