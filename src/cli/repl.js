@@ -43,6 +43,10 @@ function printPairing(pairing) {
     if (pair[0].solo) {
       pairStr += ' (soloing)';
     }
+    var devHoldingStory = pair.filter(function(dev){ return dev.story })[0];
+    if (devHoldingStory) {
+      pairStr += ' on ' + devHoldingStory.story;
+    }
     console.log(pairStr);
   });
 }
@@ -70,6 +74,7 @@ MainLoop.prototype.home = function() {
   this.menu
     .clear()
     .item('Add developer(s)', this.beginAddDevLoop, this)
+    .item('Assign story', this.beginAssignStory, this)
     .item('Toggle solo status of a developer', this.beginSoloistLoop, this)
     .item('Solve again', this.solveAgain, this)
     .item('Quit', this.quit, this)
@@ -89,6 +94,10 @@ MainLoop.prototype.beginAddDevLoop = function(line) {
   this.repl.pushLoop(new AddDevLoop(this.repl));
 }
 
+MainLoop.prototype.beginAssignStory = function(line) {
+  this.repl.pushLoop(new AssignStoryLoop(this.repl));
+}
+
 MainLoop.prototype.beginSoloistLoop = function(line) {
   this.repl.pushLoop(new ToggleSoloistLoop(this.repl));
 }
@@ -100,6 +109,33 @@ MainLoop.prototype.solveAgain = function(line) {
 
 MainLoop.prototype.wtf = function(line) {
   console.log('say what?');
+}
+
+function AssignStoryLoop(repl) {
+  this.repl = repl;
+  this.target = null;
+}
+
+AssignStoryLoop.prototype.home = function() {
+  console.log('Who to assign?');
+}
+
+AssignStoryLoop.prototype.onInput = function(input) {
+  if (this.target) {
+    this.target.story = input;
+    this.repl.popLoop();
+    return;
+  }
+  var dev = this.repl.devs.filter(function(dev) { return dev.name === input })[0];
+  if (dev) {
+    console.log('Great, what is the story', dev.name, 'will be on?');
+    this.target = dev;
+  } else if (input) {
+    console.log('I\'m not familiar with', input, 'maybe we should hire them?');
+    this.home();
+  } else {
+    this.repl.popLoop();
+  }
 }
 
 function ToggleSoloistLoop(repl) {
