@@ -5,6 +5,7 @@ const readline = require('readline');
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
+  completer: tabComplete
 });
 
 var repl = new REPL();
@@ -19,6 +20,10 @@ rl.on('line', function(line) {
     rl.prompt();
   }
 }).on('close', shutdown);
+
+function tabComplete(linePartial) {
+  return repl.onTabComplete(linePartial);
+}
 
 function shutdown() {
   repl.finish();

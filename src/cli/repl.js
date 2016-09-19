@@ -23,6 +23,43 @@ REPL.prototype.onInput = function(line) {
   this.loopStack[0].onInput(line);
 }
 
+REPL.prototype.onTabComplete = function(linePartial) {
+  if (this.tabCompleteFunc) {
+    return this.tabCompleteFunc(linePartial);
+  }
+  return [[], linePartial];
+}
+
+REPL.prototype.endTabCompletion = function(linePartial) {
+  this.tabCompleteFunc = null;
+}
+
+REPL.prototype.beginTabCompleteForDevNames = function(linePartial) {
+  this.tabCompleteFunc = this.tabCompleteDevNames;
+}
+
+REPL.prototype.tabCompleteDevNames = function(linePartial) {
+  var devNames = this.devs.map(function(dev) {
+    return dev.name;
+  }).filter(function(name) {
+    return name.match('^' + linePartial);
+  });
+  return [devNames, linePartial];
+}
+
+REPL.prototype.beginTabCompleteForStoryNames = function(linePartial) {
+  this.tabCompleteFunc = this.tabCompleteStoryNames;
+}
+
+REPL.prototype.tabCompleteStoryNames = function(linePartial) {
+  var storyNames = this.devs.map(function(dev) {
+    return dev.story;
+  }).filter(function(story, index, self) {
+    return story && self.indexOf(story) === index && story.match('^' + linePartial);
+  });
+  return [storyNames, linePartial];
+}
+
 REPL.prototype.pushLoop = function(loop) {
   this.loopStack.unshift(loop);
   this.loopStack[0].home();
@@ -101,9 +138,9 @@ MainLoop.prototype.home = function() {
   this.menu
     .clear()
     .item('Add developer(s)', this.beginAddDevLoop, this)
-    .item('Assign story', this.beginAssignStory, this)
+    .item('Assign/unassign story', this.beginAssignStory, this)
     .item('Toggle solo status of a developer', this.beginSoloistLoop, this)
-    .item('Solve again', this.solveAgain, this)
+    .item('Suggest another pairing', this.solveAgain, this)
     .item('Quit', this.quit, this)
     .defaultCallback(this.wtf, this)
   this.menu.print();
@@ -144,20 +181,23 @@ function AssignStoryLoop(repl) {
 }
 
 AssignStoryLoop.prototype.home = function() {
-  console.log('Who to assign?');
+  console.log('Who to assign or unassign?');
+  this.repl.beginTabCompleteForDevNames();
 }
 
 AssignStoryLoop.prototype.onInput = function(input) {
+  this.repl.endTabCompletion();
   if (this.target) {
-    this.target.story = input;
+    this.target.story = input || null;
     this.repl.save();
     this.repl.popLoop();
     return;
   }
   var dev = this.repl.getDevByName(input);
   if (dev) {
-    console.log('Great, what is the story', dev.name, 'will be on?');
+    console.log('Great, what is the story', dev.name, 'will be on? Enter blank line to unassign.');
     this.target = dev;
+    this.repl.beginTabCompleteForStoryNames();
   } else if (input) {
     console.log('I\'m not familiar with', input, 'maybe we should hire them?');
     this.home();
@@ -172,9 +212,11 @@ function ToggleSoloistLoop(repl) {
 
 ToggleSoloistLoop.prototype.home = function() {
   console.log('Who?');
+  this.repl.beginTabCompleteForDevNames();
 }
 
 ToggleSoloistLoop.prototype.onInput = function(input) {
+  this.repl.endTabCompletion();
   var dev = this.repl.getDevByName(input);
   if (dev) {
     dev.solo = !dev.solo;
