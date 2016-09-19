@@ -97,10 +97,11 @@ REPL.prototype.getDevByName = function(name) {
 
 function MainLoop(repl) {
   this.repl = repl;
-  this.menu = new NumberedMenu();
+  this.menu = new KeyedMenu();
 }
 
 function printPairing(pairing) {
+  console.log()
   pairing.forEach(function(pair) {
     var pairStr = '\t';
     pairStr += pair.map(function(dev) { return dev.name; }).join(' & ');
@@ -113,6 +114,7 @@ function printPairing(pairing) {
     }
     console.log(pairStr);
   });
+  console.log()
 }
 
 function printDevs(devs) {
@@ -128,7 +130,7 @@ MainLoop.prototype.home = function() {
   } else {
     var pairist = new Pairist();
     var pairings = pairist.listPairings(this.repl.devs);
-    console.log('Current team')
+    console.log('Current team (' + this.repl.devs.length + ' developers)')
     printDevs(this.repl.devs);
     console.log('There are', pairings.length, 'solutions. How\'s this?');
 
@@ -137,11 +139,11 @@ MainLoop.prototype.home = function() {
   }
   this.menu
     .clear()
-    .item('Add developer(s)', this.beginAddDevLoop, this)
-    .item('Assign/unassign story', this.beginAssignStory, this)
-    .item('Toggle solo status of a developer', this.beginSoloistLoop, this)
-    .item('Suggest another pairing', this.solveAgain, this)
-    .item('Quit', this.quit, this)
+    .item('d', 'Add Developer(s)', this.beginAddDevLoop, this)
+    .item('a', 'Assign/unassign story', this.beginAssignStory, this)
+    .item('s', 'Toggle solo status of a developer', this.beginSoloistLoop, this)
+    .item('r', 'Suggest another pairing', this.solveAgain, this)
+    .item('q', 'Quit', this.quit, this)
     .defaultCallback(this.wtf, this)
   this.menu.print();
 }
@@ -246,19 +248,20 @@ AddDevLoop.prototype.onInput = function(input) {
   }
 }
 
-function NumberedMenu() {
+function KeyedMenu() {
   this.clear();
 }
 
-NumberedMenu.prototype.clear = function() {
+KeyedMenu.prototype.clear = function() {
+  this.keys = [];
   this.labels = [];
   this.callbacks = [];
   return this;
 }
 
-NumberedMenu.prototype.select = function(input) {
-  var selection = parseInt(input);
-  var cb = this.callbacks[selection];
+KeyedMenu.prototype.select = function(input) {
+  var index = this.keys.indexOf(input);
+  var cb = this.callbacks[index];
   if (cb) {
     cb();
   } else {
@@ -266,19 +269,20 @@ NumberedMenu.prototype.select = function(input) {
   }
 }
 
-NumberedMenu.prototype.print = function() {
+KeyedMenu.prototype.print = function() {
   this.labels.forEach(function(label, index) {
-    console.log(index.toString(), label);
-  });
+    console.log(this.keys[index], label);
+  }, this);
 }
 
-NumberedMenu.prototype.item = function(label, func, ctx) {
+KeyedMenu.prototype.item = function(key, label, func, ctx) {
+  this.keys.push(key);
   this.labels.push(label);
   this.callbacks.push(function(){ func.call(ctx) });
   return this;
 }
 
-NumberedMenu.prototype.defaultCallback = function(cb, ctx) {
+KeyedMenu.prototype.defaultCallback = function(cb, ctx) {
   this.callDefault = function() {
     cb.call(ctx);
   };
