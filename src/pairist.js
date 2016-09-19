@@ -113,9 +113,9 @@ function pairUpDev(head, tail) {
 }
 
 function removeDevs(pair, devs) {
-  var names_to_remove = pair.map(function(dev){return dev.name});
+  var toRemove = pair.map(function(dev){return dev.id});
   return devs.filter(function(dev) {
-    return names_to_remove.indexOf(dev.name) == -1;
+    return toRemove.indexOf(dev.id) == -1;
   });
 }
 
@@ -205,12 +205,13 @@ function uniqueStoryNames(pair) {
 function stringifyAndSort(pairing) {
   return '(' + pairing.map(function(pair) {
     return pair.map(function(dev) {
-      return dev.name;
+      return dev.id;
     }).sort().join('&');
   }).sort().join(',') + ')';
 }
 
-function Developer(name) {
+function Developer(id, name) {
+  this.id = id;
   this.name = name;
   this.story = null;
   this.solo = false;

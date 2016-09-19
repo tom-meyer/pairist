@@ -36,7 +36,7 @@ function isEqualPairing(pairing1, pairing2) {
 function stringifyAndSort(pairing) {
   return '(' + pairing.map(function(pair) {
     return pair.map(function(dev) {
-      return dev.name;
+      return dev.id;
     }).sort().join('&');
   }).sort().join(',') + ')';
 }
