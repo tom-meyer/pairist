@@ -3,28 +3,38 @@ module.exports = REPL;
 function REPL() {
   this.quit = false;
   this.tracks = [];
-  //this.begin = this.printMenu;
-  //this.onInput = function(){};
-  this.currentLoop = new MainLoop(this);
+  this.devs = [];
+  this.loopStack = [new MainLoop(this)];
 }
 
 REPL.prototype.begin = function() {
-  this.currentLoop.home();
+  this.loopStack[0].home();
 }
 
 REPL.prototype.onInput = function(line) {
-  this.currentLoop.onInput(line);
+  this.loopStack[0].onInput(line);
+}
+
+REPL.prototype.pushLoop = function(loop) {
+  this.loopStack.unshift(loop);
+  this.loopStack[0].home();
+}
+
+REPL.prototype.popLoop = function() {
+  this.loopStack.shift();
+  this.loopStack[0].home();
 }
 
 function MainLoop(repl) {
   this.repl = repl;
-  this.devs = [];
   this.menu = new NumberedMenu();
 }
 
 MainLoop.prototype.home = function() {
-  if (this.devs.length === 0) {
+  if (this.repl.devs.length === 0) {
     console.log('There are no developers, you must add some for this to be fruitful');
+  } else {
+    console.log('Current free developers', this.repl.devs);
   }
   this.menu
     .clear()
@@ -35,12 +45,16 @@ MainLoop.prototype.home = function() {
   this.menu.print();
 }
 
+MainLoop.prototype.onInput = function(line) {
+  this.menu.select(line);
+}
+
 MainLoop.prototype.quit = function(line) {
   this.repl.quit = true;
 }
 
 MainLoop.prototype.beginAddDevLoop = function(line) {
-  console.log('beginAddDevLoop');
+  this.repl.pushLoop(new AddDevLoop(this.repl));
 }
 
 MainLoop.prototype.solveAgain = function(line) {
@@ -51,8 +65,20 @@ MainLoop.prototype.wtf = function(line) {
   console.log('say what?');
 }
 
-MainLoop.prototype.onInput = function(line) {
-  this.menu.select(line);
+function AddDevLoop(repl) {
+  this.repl = repl;
+}
+
+AddDevLoop.prototype.home = function() {
+  console.log('Add developers by name, one per line. Enter empty line to finish');
+}
+
+AddDevLoop.prototype.onInput = function(line) {
+  if (line) {
+    this.repl.devs.push(line);
+  } else {
+    this.repl.popLoop();
+  }
 }
 
 function NumberedMenu() {
