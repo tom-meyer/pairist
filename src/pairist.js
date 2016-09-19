@@ -114,12 +114,9 @@ function listSomePairs(devs) {
 }
 
 function removeDevs(pair, devs) {
-  var names_to_remove = pair.reduce(function(accum, dev) {
-    accum[dev.name] = null; // value is not used
-    return accum;
-  }, {});
+  var names_to_remove = pair.map(function(dev){return dev.name});
   return devs.filter(function(dev) {
-    return !(dev.name in names_to_remove);
+    return names_to_remove.indexOf(dev.name) == -1;
   });
 }
 
@@ -166,12 +163,7 @@ function isValid(pairing) {
       freeDevs += pair.length;
     }
 
-    var pairStories = Object.keys(pair.reduce(function(accum, dev) {
-      if (dev.story) {
-        accum[dev.story] = null; // value not used
-      }
-      return accum;
-    }, {}));
+    var pairStories = uniqueStoryNames(pair);
     var currentStory = pairStories[0];
     if (!currentStory) {
       continue;
@@ -204,13 +196,11 @@ function isValid(pairing) {
 }
 
 function uniqueStoryNames(pair) {
-  var names = pair.reduce(function(accum, dev) {
-    if (dev.story) {
-      accum[dev.story] = null; // value doesn't matter
-    }
-    return accum;
-  }, {});
-  return Object.keys(names);
+  return pair.map(function(dev) {
+    return dev.story;
+  }).filter(function(story, index, self) {
+    return self.indexOf(story) === index;
+  });
 }
 
 function combinePairs(alreadyPaired, pairings) {
